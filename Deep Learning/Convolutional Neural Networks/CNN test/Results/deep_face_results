@@ -1,0 +1,17 @@
+Deep Face Results
+
+dataset YALE
+Test 1: Accuracy: 95,83% (fig_1) 128 Neurons Classifier
+Test 2: Accuracy: 93,75% (fig_2) 4096 Neurons Classifier
+
+dataset JAFFE
+Test 1: Accuracy: 100% (fig_1) 128 Neurons Classifier
+Test 2: Accuracy: 93,75% (fig_2) 4096 Neurons Classifier
+
+dataset AR
+Test 1: Accuracy: 95,50% (fig_1) 128 Neurons Classifier
+
+
+dataset SDUMLA
+Test 1: Accuracy: 91,53% (fig_1) 128 Neurons Classifier
+Test 1: Accuracy: 89,24% (fig_2) 4096 Neurons Classifier

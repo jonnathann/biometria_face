@@ -1,0 +1,69 @@
+function fnametest()
+
+fold = strcat('features_image/image_feature_', num2str(1), '.mat');
+
+entrada = load(fold);
+saida = load('yale/rotulos_yalle.mat');
+
+entrada = normalizar(entrada.image_feature);
+saida = saida.saida.features_saida;
+
+x = entrada;
+y = saida;
+
+id = (1:numel(y))-1;
+nclass = numel(accumarray(y, 1));
+
+for i = 1:10
+    
+    rng(i);
+    perm = randperm(size(x, 1));
+    xprm = x(perm, :);
+    yprm = y(perm, :);
+    
+    basepath = '/home/clodoaldo/fnametest';
+    fname_all = fullfile(basepath, 'xyz.opf');
+    opf_bin(xprm, yprm, id, nclass, fname_all);
+    [r1, ~] = system(sprintf('/usr/local/opf/bin/opf_distance %s 1 1', fname_all));
+    assert(r1 == 0);
+    
+    %Retirando 70% para treino e 30 para teste
+    t_70 = round(size(x, 1) * 0.7);
+    
+    %Treinamento
+    Xtr = xprm(1:t_70, :);
+    Ytr = yprm(1:t_70, :);
+    
+    %Teste
+    Xts = xprm(t_70 + 1:end, :);
+    Yts = yprm(t_70 + 1:end, :);
+    
+    fname_trn = fullfile(basepath, 'train.opf');
+    opf_bin(Xtr, Ytr, id(1:t_70), nclass, fname_trn);
+    
+    fname_tst = fullfile(basepath, 'test.opf');
+    opf_bin(Xts, Yts, id(t_70 + 1:end), nclass, fname_tst);
+    
+    [r1, ~] = system(sprintf('/usr/local/opf/bin/opf_train %s distances.dat', fname_trn));
+    [r2, ~] = system(sprintf('/usr/local/opf/bin/opf_classify %s distances.dat', fname_tst));
+    assert(r1 == 0 || r2 == 0);
+    
+    yp = csvread([fname_tst '.out']);
+    error = mean(Yts ~= yp);
+    acc  = 1 - error;
+    disp(acc*100);
+    
+end
+
+end
+
+function opf_bin(x, y, id, nclass, fname)
+[m, n] = size(x);
+fid = fopen(fname, 'w');
+fwrite(fid, [m nclass n], 'uint32');
+for i = 1:m
+    fwrite(fid, [id(i) y(i)], 'uint32');
+    fwrite(fid, x(i, :), 'float32');
+end
+fclose(fid);
+end
